@@ -66,12 +66,84 @@ app.get("/sum", (req, res) => {
 });
 
 app.get("/cipher", (req, res) => {
-    const {text, shift} = req.query
-    if (!text) return res.status(400).send(`text is required`);
-    if (!shift) return res.status(400).send(`shift is required`);
-    const numShift = parseFloat(shift)
-    if (Number.isNaN(numShift)) return res.status(400).send(`Shift must be a number`);
-    const shiftedText = 
-    console.log(req.query);
-    res.end(); //do not send any data back to the client
-  });
+  const { text, shift } = req.query;
+  if (!text) return res.status(400).send(`text is required`);
+  if (!shift) return res.status(400).send(`shift is required`);
+  const numShift = parseFloat(shift);
+  if (Number.isNaN(numShift))
+    return res.status(400).send(`Shift must be a number`);
+  const base = "A".charCodeAt(0);
+  const cipher = text
+    .toUpperCase()
+    .split("")
+    .map((char) => {
+      const code = char.charCodeAt(0);
+      if (code < base || code > base + 26) {
+        return char;
+      }
+      let diff = code - base;
+      diff = diff + numShift;
+      diff = diff % 26;
+      const shiftedChar = String.fromCharCode(base + diff);
+      return shiftedChar;
+    })
+    .join("");
+  res.status(200).send(cipher);
+});
+
+app.get("/lotto", (req, res) => {
+  const { numbers } = req.query;
+  if (!numbers) {
+    return res.status(400).send("numbers is required");
+  }
+
+  if (!Array.isArray(numbers)) {
+    return res.status(400).send("numbers must be an array");
+  }
+
+  const guesses = numbers
+    .map((n) => parseInt(n))
+    .filter((n) => !Number.isNaN(n) && n >= 1 && n <= 20);
+
+  if (guesses.length != 6) {
+    return res
+      .status(400)
+      .send("numbers must contain 6 integers between 1 and 20");
+  }
+
+  const stockNumbers = Array(20)
+    .fill(1)
+    .map((_, i) => i + 1);
+  const winningNumbers = [];
+  for (let i = 0; i < 6; i++) {
+    const random = Math.floor(Math.random() * stockNumbers.length);
+    winningNumbers.push(stockNumbers[random]);
+    stockNumbers.splice(random, 1);
+  }
+  let diff = winningNumbers.filter((n) => !guesses.includes(n));
+
+  let responseText;
+
+  switch (diff.length) {
+    case 0:
+      responseText =
+        "Wow! Unbelievable! You could have wont the mega millions!";
+      break;
+    case 1:
+      responseText = "Congratulations, you win $100!";
+      break;
+    case 2:
+      responseText = "Congratulations, you win a free ticket!";
+      break;
+    default:
+      responseText = "Sorry, you lose";
+  }
+
+  res.json({ guesses, winningNumbers, diff, responseText });
+
+  res.send(responseText);
+});
+
+app.listen(8000, () => {
+  console.log("Server started on port 8000");
+});
