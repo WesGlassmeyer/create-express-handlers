@@ -8,10 +8,6 @@ app.get("/", (req, res) => {
   res.send("change the code!");
 });
 
-app.listen(8000, () => {
-  console.log("Express server is listening on port 8000!");
-});
-
 app.get("/burgers", (req, res) => {
   res.send("We have juicy cheese burgers!");
 });
@@ -116,9 +112,9 @@ app.get("/lotto", (req, res) => {
     .map((_, i) => i + 1);
   const winningNumbers = [];
   for (let i = 0; i < 6; i++) {
-    const random = Math.floor(Math.random() * stockNumbers.length);
-    winningNumbers.push(stockNumbers[random]);
-    stockNumbers.splice(random, 1);
+    const ran = Math.floor(Math.random() * stockNumbers.length);
+    winningNumbers.push(stockNumbers[ran]);
+    stockNumbers.splice(ran, 1);
   }
   let diff = winningNumbers.filter((n) => !guesses.includes(n));
 
@@ -126,8 +122,7 @@ app.get("/lotto", (req, res) => {
 
   switch (diff.length) {
     case 0:
-      responseText =
-        "Wow! Unbelievable! You could have wont the mega millions!";
+      responseText = "Wow! Unbelievable! You could have won the mega millions!";
       break;
     case 1:
       responseText = "Congratulations, you win $100!";
